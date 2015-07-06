@@ -4,7 +4,6 @@
 
 let expect = chai.expect;
 
-let seededChance = new Chance(1);
 let fixtures = {
 
 
