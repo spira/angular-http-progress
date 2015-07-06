@@ -53,15 +53,15 @@ module NgHttpProgress {
             return this;
         }
 
-        public $get = ['$http', '$q', '$window', '$interval', function ngHttpProgressServiceFactory($http, $q, $window, $interval) {
-            return new NgHttpProgressService(this.config, $http, $q, $window, $interval);
+        public $get = ['$http', '$q', '$window', '$interval', 'ngProgress', function ngHttpProgressServiceFactory($http, $q, $window, $interval, ngProgress) {
+            return new NgHttpProgressService(this.config, $http, $q, $window, $interval, ngProgress);
         }];
 
     }
 
 
 
-    angular.module('ngHttpProgress', [])
+    angular.module('ngHttpProgress', ['ngProgress'])
         .provider('ngHttpProgress', NgHttpProgressServiceProvider)
         .service('ngHttpProgressInterceptor', NgHttpProgressInterceptor)
         .config(['$httpProvider', '$injector', ($httpProvider:ng.IHttpProvider) => {
