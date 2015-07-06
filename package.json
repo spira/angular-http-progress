@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "description": "Angular HTTP Site Progress Reporter",
   "main": "dist/ngHttpProgress.js",
+  "scripts": {
+    "test": "gulp test",
+    "postinstall": "./node_modules/.bin/tsd reinstall --config tsd.json"
+  },
   "dependencies": {},
   "devDependencies": {
     "bower": "^1.4.1",
@@ -48,6 +52,7 @@
     "requirejs": "^2.1.18",
     "run-sequence": "^1.1.1",
     "sinon": "^1.15.4",
+    "tsd": "^0.6.3",
     "typescript": "^1.5.0-beta"
   }
 }
