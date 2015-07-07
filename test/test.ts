@@ -164,6 +164,30 @@ describe('Service tests', () => {
             expect(progressPromise).eventually.to.be.greaterThan(0);
 
             progressPromise.then(() => {
+                expect(ngHttpProgressService.status()).to.equal(0);
+                done();
+            });
+
+            tickTime(2); //flush the timeouts
+
+        });
+
+        it('should rewind the progress bar when an $http request fails', (done) => {
+
+            $httpBackend.expectGET('/any').respond(500, 'foobar');
+
+            $http.get('/any');
+            tickTime(2); //wait for the request to get to the interceptor
+
+            let progressPromise = ngHttpProgressService.progressStatus();
+
+            $httpBackend.flush();
+
+            expect(progressPromise).eventually.to.be.fulfilled;
+            expect(progressPromise).eventually.to.be.greaterThan(0);
+
+            progressPromise.then(() => {
+                expect(ngHttpProgressService.status()).to.equal(0);
                 done();
             });
 

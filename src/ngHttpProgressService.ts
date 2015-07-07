@@ -144,9 +144,12 @@ module NgHttpProgress {
          */
         private reset():ng.IPromise<number> {
 
-            this.ngProgress.reset();
+            return this.$timeout(() => { //wrap in $timeout to allow $digest to have a cycle
+                let finishStatus = this.status();
+                this.ngProgress.reset();
+                return finishStatus;
+            });
 
-            return this.$q.when(this.status());
         }
 
         /**

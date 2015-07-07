@@ -151,8 +151,12 @@ var NgHttpProgress;
          * @returns {IPromise<number>}
          */
         NgHttpProgressService.prototype.reset = function () {
-            this.ngProgress.reset();
-            return this.$q.when(this.status());
+            var _this = this;
+            return this.$timeout(function () {
+                var finishStatus = _this.status();
+                _this.ngProgress.reset();
+                return finishStatus;
+            });
         };
         /**
          * Intialise the progress deferred promise
