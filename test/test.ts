@@ -123,7 +123,7 @@ describe('Service tests', () => {
 
         });
 
-        it('should complete the progress bar when called', () => {
+        it('should complete the progress bar when called', function(done) {
 
             expect(ngHttpProgressService.status()).to.be.greaterThan(0);
 
@@ -131,11 +131,13 @@ describe('Service tests', () => {
 
             expect(completionPromise).eventually.to.be.greaterThan(0); //status when the progress bar was completed
 
-            tickTime(2); //fast forward intervals by 2 seconds
-
             completionPromise.then(() => {
                 expect(ngHttpProgressService.status()).to.equal(100);
-            })
+                done();
+            });
+
+            tickTime(2); //fast forward intervals by 2 seconds
+
         });
 
     });
@@ -143,7 +145,7 @@ describe('Service tests', () => {
     describe('$http interceptor', () => {
 
 
-        it('should start the progress bar when an $http request starts', () => {
+        it('should start the progress bar when an $http request starts', (done) => {
 
             $httpBackend.expectGET('/any').respond('foobar');
 
@@ -161,10 +163,16 @@ describe('Service tests', () => {
 
             expect(progressPromise).eventually.to.be.greaterThan(0);
 
+            progressPromise.then(() => {
+                done();
+            });
+
+            tickTime(2); //flush the timeouts
+
         });
 
 
-        it('should be able to handle multiple http requests', () => {
+        it('should be able to handle multiple http requests', (done) => {
 
             $httpBackend.whenGET('/any').respond('foobar');
 
@@ -180,6 +188,12 @@ describe('Service tests', () => {
             expect(progressPromise).eventually.to.be.greaterThan(0);
 
             $httpBackend.flush();
+
+            progressPromise.then(() => {
+                done();
+            });
+
+            tickTime(2); //flush the completion timeout
 
         })
 

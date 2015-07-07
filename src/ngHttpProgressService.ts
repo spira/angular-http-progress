@@ -47,6 +47,7 @@ module NgHttpProgress {
                 return this.progressPromise;
             }
 
+
             return this.initProgressMeter();
         }
 
@@ -79,7 +80,8 @@ module NgHttpProgress {
          */
         public complete():ng.IPromise<number> {
 
-            if (this.pendingDelays === 1){ //the last delay
+            this.pendingDelays --;
+            if (this.pendingDelays === 0){ //no more delays remaining
                 this.currentProgressDeferred.resolve();
             }
 
@@ -112,7 +114,11 @@ module NgHttpProgress {
          * @param percentage
          */
         public set(percentage:number):ng.IPromise<number> {
-            this.ngProgress.set(percentage);
+
+            this.$timeout(() => { //immediately invoke timeout in case a $digest cycle is busy
+                this.ngProgress.set(percentage);
+            });
+
             return this.progressPromise;
         }
 
@@ -122,7 +128,10 @@ module NgHttpProgress {
          */
         private finish():ng.IPromise<number> {
             let finishStatus = this.status();
-            this.ngProgress.complete();
+
+            this.$timeout(() => { //wrap in $timeout to allow $digest to have a cycle
+                this.ngProgress.complete();
+            });
 
             return this.$timeout(() => { //wait for the animation to finish before setting status
                 return finishStatus;
@@ -156,6 +165,7 @@ module NgHttpProgress {
                 }, () => { //error
                     return this.reset();
                 }, (bumpBack:boolean) => { //notify
+
                     if (bumpBack) {
                         this.bumpBack();
                     } else if (this.stopped){

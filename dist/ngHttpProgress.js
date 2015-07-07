@@ -97,7 +97,8 @@ var NgHttpProgress;
          * @returns {IPromise<T>}
          */
         NgHttpProgressService.prototype.complete = function () {
-            if (this.pendingDelays === 1) {
+            this.pendingDelays--;
+            if (this.pendingDelays === 0) {
                 this.currentProgressDeferred.resolve();
             }
             return this.progressPromise;
@@ -125,7 +126,10 @@ var NgHttpProgress;
          * @param percentage
          */
         NgHttpProgressService.prototype.set = function (percentage) {
-            this.ngProgress.set(percentage);
+            var _this = this;
+            this.$timeout(function () {
+                _this.ngProgress.set(percentage);
+            });
             return this.progressPromise;
         };
         /**
@@ -133,8 +137,11 @@ var NgHttpProgress;
          * @returns {IPromise<any>}
          */
         NgHttpProgressService.prototype.finish = function () {
+            var _this = this;
             var finishStatus = this.status();
-            this.ngProgress.complete();
+            this.$timeout(function () {
+                _this.ngProgress.complete();
+            });
             return this.$timeout(function () {
                 return finishStatus;
             }, NgHttpProgressService.ngProgressFinishTime);
