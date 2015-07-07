@@ -73,7 +73,6 @@ var NgHttpProgress;
                 this.currentProgressDeferred.notify(true);
                 return this.progressPromise;
             }
-            console.log('progress starting');
             return this.initProgressMeter();
         };
         /**

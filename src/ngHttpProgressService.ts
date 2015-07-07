@@ -47,8 +47,6 @@ module NgHttpProgress {
                 return this.progressPromise;
             }
 
-            console.log('progress starting');
-
             return this.initProgressMeter();
         }
 

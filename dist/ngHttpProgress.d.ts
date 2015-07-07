@@ -11,6 +11,7 @@ declare module NgHttpProgress {
         set(percentage: number): void;
         reset(): void;
         complete(): void;
+        getDomElement(): Element;
     }
     interface INgHttpProgressService {
         start(): ng.IPromise<number>;

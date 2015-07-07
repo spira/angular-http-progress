@@ -11,6 +11,7 @@ module NgHttpProgress {
         set(percentage:number):void;
         reset():void;
         complete():void;
+        getDomElement():Element;
     }
 
     export interface INgHttpProgressService {

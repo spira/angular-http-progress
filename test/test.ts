@@ -7,8 +7,11 @@ let expect = chai.expect;
 let fixtures = {
 
 
-    get foo(){
-        return 'bar';
+    get customConfig():NgHttpProgress.INgHttpProgressServiceConfig{
+        return {
+            color: 'rgb(255, 0, 255)',
+            height: '2px'
+        };
     },
 
 };
@@ -29,6 +32,42 @@ let tickTime = (seconds) => {
     $timeout.flush(millis);
 
 };
+
+
+
+describe('Custom configuration', function () {
+
+    let ngHttpProgressProvider:NgHttpProgress.NgHttpProgressServiceProvider;
+    let customProgressService:NgHttpProgress.NgHttpProgressService;
+
+    beforeEach(() => {
+
+        module('ngHttpProgress', (_ngHttpProgressProvider_) => {
+            ngHttpProgressProvider = _ngHttpProgressProvider_; //register injection of service provider
+
+            ngHttpProgressProvider.configure(fixtures.customConfig);
+
+        });
+
+    });
+
+    beforeEach(()=>{
+        inject((_ngHttpProgress_) => {
+            customProgressService = _ngHttpProgress_;
+        })
+    });
+
+    it('should have the configured color and height', function() {
+
+        let element:Element =  (<any>customProgressService).ngProgress.getDomElement(),
+            styledElement = jQuery(element).find('#ngProgress')
+        ;
+        expect(styledElement.css('backgroundColor')).to.equal(fixtures.customConfig.color);
+        expect(styledElement.css('height')).to.equal(fixtures.customConfig.height);
+    });
+
+
+});
 
 describe('Service tests', () => {
 
@@ -70,7 +109,7 @@ describe('Service tests', () => {
     });
 
 
-    describe('$http interceptor', () => {
+    describe('direct api call', () => {
 
         it('should start the progress bar when called directly', () => {
 
@@ -98,6 +137,10 @@ describe('Service tests', () => {
                 expect(ngHttpProgressService.status()).to.equal(100);
             })
         });
+
+    });
+
+    describe('$http interceptor', () => {
 
 
         it('should start the progress bar when an $http request starts', () => {
