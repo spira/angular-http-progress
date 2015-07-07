@@ -150,6 +150,35 @@ describe('Service tests', () => {
 
         });
 
+        it.skip('should stop the progress bar when called', function(done){
+
+            ngHttpProgressService.start();
+
+            tickTime(0.5); //fast forward intervals by 2 seconds
+
+            ngHttpProgressService.stop();
+
+            tickTime(0.5); //let more time elapse
+
+            expect((<any>ngHttpProgressService).stopped).to.be.true;
+
+            ngHttpProgressService.start(); //restart
+
+            tickTime(0.5); //let more time elapse
+
+            let completionPromise = ngHttpProgressService.complete(); //resume and finish
+
+            tickTime(2); //let more time elapse
+
+            completionPromise.then(() => {
+                expect(ngHttpProgressService.status()).to.equal(100);
+                done();
+            });
+
+            tickTime(2); //fast forward intervals by 2 seconds
+
+        });
+
     });
 
     describe('$http interceptor', () => {

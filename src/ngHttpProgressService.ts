@@ -42,7 +42,13 @@ module NgHttpProgress {
             this.pendingDelays ++;
 
             if (this.currentProgressDeferred){ //exists
-                this.currentProgressDeferred.notify(true);
+
+                if (this.stopped){
+                    this.stopped = false;
+                    this.currentProgressDeferred.notify('start');
+                }else{
+                    this.currentProgressDeferred.notify('bumpback');
+                }
 
                 return this.progressPromise;
             }
@@ -70,7 +76,7 @@ module NgHttpProgress {
          * @returns {IPromise<T>}
          */
         public stop():ng.IPromise<number> {
-            this.currentProgressDeferred.notify(false);
+            this.currentProgressDeferred.notify('stop');
             return this.progressPromise;
         }
 
@@ -153,6 +159,22 @@ module NgHttpProgress {
         }
 
         /**
+         * Handle the stopping.
+         * @returns {IPromise<any>}
+         */
+        private halt():ng.IPromise<number> {
+
+            this.stopped = true;
+
+            return this.$timeout(() => { //wrap in $timeout to allow $digest to have a cycle
+                let currentStatus = this.status();
+                this.ngProgress.stop();
+                return currentStatus;
+            });
+
+        }
+
+        /**
          * Intialise the progress deferred promise
          * @returns {IPromise<TResult>}
          */
@@ -166,18 +188,22 @@ module NgHttpProgress {
                 .then(() => { //success
                     return this.finish();
                 }, () => { //error
+                    console.log('reset');
                     return this.reset();
-                }, (bumpBack:boolean) => { //notify
+                }, (action:string) => { //notify
 
-                    if (bumpBack) {
-                        this.bumpBack();
-                    } else if (this.stopped){
-
-                        this.ngProgress.start();
-                    }else{
-
-                        this.stop();
+                    switch(action){
+                        case 'start':
+                            this.ngProgress.start();
+                        break;
+                        case 'stop':
+                            this.halt();
+                        break;
+                        case 'bumpback':
+                            this.bumpBack();
+                        break;
                     }
+
                 })
                 .finally(() => {
                     this.currentProgressDeferred = null; //clear the current progress

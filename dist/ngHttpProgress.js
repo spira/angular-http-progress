@@ -70,7 +70,13 @@ var NgHttpProgress;
         NgHttpProgressService.prototype.start = function () {
             this.pendingDelays++;
             if (this.currentProgressDeferred) {
-                this.currentProgressDeferred.notify(true);
+                if (this.stopped) {
+                    this.stopped = false;
+                    this.currentProgressDeferred.notify('start');
+                }
+                else {
+                    this.currentProgressDeferred.notify('bumpback');
+                }
                 return this.progressPromise;
             }
             return this.initProgressMeter();
@@ -89,7 +95,7 @@ var NgHttpProgress;
          * @returns {IPromise<T>}
          */
         NgHttpProgressService.prototype.stop = function () {
-            this.currentProgressDeferred.notify(false);
+            this.currentProgressDeferred.notify('stop');
             return this.progressPromise;
         };
         /**
@@ -159,6 +165,19 @@ var NgHttpProgress;
             });
         };
         /**
+         * Handle the stopping.
+         * @returns {IPromise<any>}
+         */
+        NgHttpProgressService.prototype.halt = function () {
+            var _this = this;
+            this.stopped = true;
+            return this.$timeout(function () {
+                var currentStatus = _this.status();
+                _this.ngProgress.stop();
+                return currentStatus;
+            });
+        };
+        /**
          * Intialise the progress deferred promise
          * @returns {IPromise<TResult>}
          */
@@ -170,16 +189,19 @@ var NgHttpProgress;
                 .then(function () {
                 return _this.finish();
             }, function () {
+                console.log('reset');
                 return _this.reset();
-            }, function (bumpBack) {
-                if (bumpBack) {
-                    _this.bumpBack();
-                }
-                else if (_this.stopped) {
-                    _this.ngProgress.start();
-                }
-                else {
-                    _this.stop();
+            }, function (action) {
+                switch (action) {
+                    case 'start':
+                        _this.ngProgress.start();
+                        break;
+                    case 'stop':
+                        _this.halt();
+                        break;
+                    case 'bumpback':
+                        _this.bumpBack();
+                        break;
                 }
             })
                 .finally(function () {

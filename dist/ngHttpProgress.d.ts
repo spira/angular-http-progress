@@ -113,6 +113,11 @@ declare module NgHttpProgress {
          */
         private reset();
         /**
+         * Handle the stopping.
+         * @returns {IPromise<any>}
+         */
+        private halt();
+        /**
          * Intialise the progress deferred promise
          * @returns {IPromise<TResult>}
          */
