@@ -16,7 +16,7 @@ declare module NgHttpProgress {
         start(): ng.IPromise<number>;
         stop(): ng.IPromise<number>;
         complete(): ng.IPromise<number>;
-        reset(): ng.IPromise<number>;
+        rewind(): ng.IPromise<number>;
         status(): number;
         set(percentage: number): void;
     }
@@ -39,7 +39,7 @@ declare module NgHttpProgress {
          * @param _$injector
          */
         static $inject: string[];
-        constructor(_$q: ng.IQService, _$injector: ng.auto.IInjectorService);
+        constructor($q: ng.IQService, $injector: ng.auto.IInjectorService);
         private getNgHttpProgressService;
         request: (config: any) => any;
         response: (response: any) => any;
@@ -49,23 +49,22 @@ declare module NgHttpProgress {
 declare module NgHttpProgress {
     class NgHttpProgressService implements INgHttpProgressService {
         private config;
-        private $http;
         private $q;
-        private $window;
         private $timeout;
         private ngProgress;
         private currentProgressDeferred;
+        private progressPromise;
         static ngProgressFinishTime: number;
+        private pendingDelays;
+        private stopped;
         /**
          * Construct the service with dependencies injected
          * @param config
-         * @param $http
          * @param $q
-         * @param $window
          * @param $timeout
          * @param ngProgress
          */
-        constructor(config: INgHttpProgressServiceConfig, $http: ng.IHttpService, $q: ng.IQService, $window: ng.IWindowService, $timeout: ng.ITimeoutService, ngProgress: ngProgress);
+        constructor(config: INgHttpProgressServiceConfig, $q: ng.IQService, $timeout: ng.ITimeoutService, ngProgress: ngProgress);
         /**
          * Start the progress bar running
          * @returns {any}
@@ -90,27 +89,33 @@ declare module NgHttpProgress {
          * Reset the progress bar to zero
          * @returns {IPromise<T>}
          */
-        reset(): ng.IPromise<number>;
+        rewind(): ng.IPromise<number>;
         /**
          * Get the status of the progress bar
          * @returns {number}
          */
         status(): number;
+        progressStatus(): ng.IPromise<number>;
         /**
          * Set the status of the progress bar
          * @param percentage
          */
-        set(percentage: number): void;
+        set(percentage: number): ng.IPromise<number>;
         /**
          * Finish the progress of the promise
          * @returns {IPromise<any>}
          */
         private finish();
         /**
+         * Handle the reset. Immediately invoke as the ngProgress service executes immediately
+         * @returns {IPromise<number>}
+         */
+        private reset();
+        /**
          * Intialise the progress deferred promise
          * @returns {IPromise<TResult>}
          */
-        private initDeferred();
+        private initProgressMeter();
     }
 }
 declare module NgHttpProgress {
@@ -137,6 +142,6 @@ declare module NgHttpProgress {
          * @returns {NgHttpProgress.NgHttpProgressServiceProvider}
          */
         configure(config: INgHttpProgressServiceConfig): NgHttpProgressServiceProvider;
-        $get: (string | (($http: any, $q: any, $window: any, $interval: any, ngProgress: any) => NgHttpProgressService))[];
+        $get: (string | (($q: any, $timeout: any, ngProgress: any) => NgHttpProgressService))[];
     }
 }

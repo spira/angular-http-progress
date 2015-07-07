@@ -4,31 +4,31 @@
 var NgHttpProgress;
 (function (NgHttpProgress) {
     var NgHttpProgressInterceptor = (function () {
-        function NgHttpProgressInterceptor(_$q, _$injector) {
+        function NgHttpProgressInterceptor($q, $injector) {
             var _this = this;
+            this.$q = $q;
+            this.$injector = $injector;
             this.getNgHttpProgressService = function () {
                 if (_this.ngHttpProgressService == null) {
-                    _this.ngHttpProgressService = _this.$injector.get('ngHttpProgressService');
+                    _this.ngHttpProgressService = _this.$injector.get('ngHttpProgress');
                 }
                 return _this.ngHttpProgressService;
             };
             this.request = function (config) {
-                var ngHttpProgressService = _this.getNgHttpProgressService();
-                //@todo start progress bar
+                var progress = _this.getNgHttpProgressService();
+                progress.start();
                 return config;
             };
             this.response = function (response) {
-                var ngHttpProgressService = _this.getNgHttpProgressService();
-                //@todo advance progress bar to end
+                var progress = _this.getNgHttpProgressService();
+                progress.complete();
                 return response;
             };
             this.responseError = function (response) {
-                var ngHttpProgressService = _this.getNgHttpProgressService();
-                //@todo rewind progress bar
+                var progress = _this.getNgHttpProgressService();
+                progress.rewind();
                 return response;
             };
-            this.$q = _$q;
-            this.$injector = _$injector;
         }
         /**
          * Construct the service with dependencies injected
@@ -49,19 +49,17 @@ var NgHttpProgress;
         /**
          * Construct the service with dependencies injected
          * @param config
-         * @param $http
          * @param $q
-         * @param $window
          * @param $timeout
          * @param ngProgress
          */
-        function NgHttpProgressService(config, $http, $q, $window, $timeout, ngProgress) {
+        function NgHttpProgressService(config, $q, $timeout, ngProgress) {
             this.config = config;
-            this.$http = $http;
             this.$q = $q;
-            this.$window = $window;
             this.$timeout = $timeout;
             this.ngProgress = ngProgress;
+            this.pendingDelays = 0;
+            this.stopped = false;
             this.ngProgress.color(this.config.color);
             this.ngProgress.height(this.config.height);
         }
@@ -70,12 +68,13 @@ var NgHttpProgress;
          * @returns {any}
          */
         NgHttpProgressService.prototype.start = function () {
+            this.pendingDelays++;
             if (this.currentProgressDeferred) {
                 this.currentProgressDeferred.notify(true);
-                return this.currentProgressDeferred.promise;
+                return this.progressPromise;
             }
-            this.currentProgressDeferred = this.$q.defer();
-            return this.initDeferred();
+            console.log('progress starting');
+            return this.initProgressMeter();
         };
         /**
          * Bump back the current status to less completed
@@ -84,34 +83,33 @@ var NgHttpProgress;
         NgHttpProgressService.prototype.bumpBack = function () {
             var currentProgress = this.status(), fallBackTo = currentProgress - currentProgress * (currentProgress / 120);
             this.set(fallBackTo);
-            return this.status();
+            return this.progressPromise;
         };
         /**
          * Halt the progress bar
          * @returns {IPromise<T>}
          */
         NgHttpProgressService.prototype.stop = function () {
-            var completionPromise = this.currentProgressDeferred.promise;
             this.currentProgressDeferred.notify(false);
-            return completionPromise;
+            return this.progressPromise;
         };
         /**
          * Complete the progress
          * @returns {IPromise<T>}
          */
         NgHttpProgressService.prototype.complete = function () {
-            var completionPromise = this.currentProgressDeferred.promise;
-            this.currentProgressDeferred.resolve();
-            return completionPromise;
+            if (this.pendingDelays === 1) {
+                this.currentProgressDeferred.resolve();
+            }
+            return this.progressPromise;
         };
         /**
          * Reset the progress bar to zero
          * @returns {IPromise<T>}
          */
-        NgHttpProgressService.prototype.reset = function () {
-            var completionPromise = this.currentProgressDeferred.promise;
+        NgHttpProgressService.prototype.rewind = function () {
             this.currentProgressDeferred.reject();
-            return completionPromise;
+            return this.progressPromise;
         };
         /**
          * Get the status of the progress bar
@@ -120,12 +118,16 @@ var NgHttpProgress;
         NgHttpProgressService.prototype.status = function () {
             return this.ngProgress.status();
         };
+        NgHttpProgressService.prototype.progressStatus = function () {
+            return this.progressPromise;
+        };
         /**
          * Set the status of the progress bar
          * @param percentage
          */
         NgHttpProgressService.prototype.set = function (percentage) {
-            return this.ngProgress.set(percentage);
+            this.ngProgress.set(percentage);
+            return this.progressPromise;
         };
         /**
          * Finish the progress of the promise
@@ -139,22 +141,32 @@ var NgHttpProgress;
             }, NgHttpProgressService.ngProgressFinishTime);
         };
         /**
+         * Handle the reset. Immediately invoke as the ngProgress service executes immediately
+         * @returns {IPromise<number>}
+         */
+        NgHttpProgressService.prototype.reset = function () {
+            this.ngProgress.reset();
+            return this.$q.when(this.status());
+        };
+        /**
          * Intialise the progress deferred promise
          * @returns {IPromise<TResult>}
          */
-        NgHttpProgressService.prototype.initDeferred = function () {
+        NgHttpProgressService.prototype.initProgressMeter = function () {
             var _this = this;
-            if (!this.currentProgressDeferred) {
-                throw new NgHttpProgress.NgHttpProgressException("No deferred site progress registered");
-            }
-            return this.currentProgressDeferred.promise
+            this.currentProgressDeferred = this.$q.defer();
+            this.ngProgress.start();
+            return this.progressPromise = this.currentProgressDeferred.promise
                 .then(function () {
                 return _this.finish();
             }, function () {
-                _this.ngProgress.reset();
+                return _this.reset();
             }, function (bumpBack) {
                 if (bumpBack) {
                     _this.bumpBack();
+                }
+                else if (_this.stopped) {
+                    _this.ngProgress.start();
                 }
                 else {
                     _this.stop();
@@ -162,6 +174,8 @@ var NgHttpProgress;
             })
                 .finally(function () {
                 _this.currentProgressDeferred = null; //clear the current progress
+                _this.progressPromise = null; //clear the current progress
+                _this.pendingDelays = 0; //reset
             });
         };
         NgHttpProgressService.ngProgressFinishTime = 1600; //time for finish to complete
@@ -202,8 +216,8 @@ var NgHttpProgress;
          * Initialise the service provider
          */
         function NgHttpProgressServiceProvider() {
-            this.$get = ['$http', '$q', '$window', '$interval', 'ngProgress', function ngHttpProgressServiceFactory($http, $q, $window, $interval, ngProgress) {
-                    return new NgHttpProgress.NgHttpProgressService(this.config, $http, $q, $window, $interval, ngProgress);
+            this.$get = ['$q', '$timeout', 'ngProgress', function ngHttpProgressServiceFactory($q, $timeout, ngProgress) {
+                    return new NgHttpProgress.NgHttpProgressService(this.config, $q, $timeout, ngProgress);
                 }];
             //initialise service config
             this.config = {

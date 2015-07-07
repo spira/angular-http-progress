@@ -17,7 +17,7 @@ module NgHttpProgress {
         start(): ng.IPromise<number>;
         stop(): ng.IPromise<number>;
         complete(): ng.IPromise<number>;
-        reset(): ng.IPromise<number>;
+        rewind(): ng.IPromise<number>;
         status(): number;
         set(percentage:number):void;
     }

@@ -7,23 +7,23 @@ module NgHttpProgress {
     export class NgHttpProgressService implements INgHttpProgressService {
 
         private currentProgressDeferred:ng.IDeferred<number>;
+        private progressPromise:ng.IPromise<number>;
 
         static ngProgressFinishTime = 1600; //time for finish to complete
 
+        private pendingDelays = 0;
+
+        private stopped:boolean = false;
         /**
          * Construct the service with dependencies injected
          * @param config
-         * @param $http
          * @param $q
-         * @param $window
          * @param $timeout
          * @param ngProgress
          */
         constructor(
             private config:INgHttpProgressServiceConfig,
-            private $http: ng.IHttpService,
             private $q: ng.IQService,
-            private $window: ng.IWindowService,
             private $timeout: ng.ITimeoutService,
             private ngProgress: ngProgress
         ) {
@@ -39,15 +39,17 @@ module NgHttpProgress {
          */
         public start():ng.IPromise<number> {
 
+            this.pendingDelays ++;
+
             if (this.currentProgressDeferred){ //exists
                 this.currentProgressDeferred.notify(true);
 
-                return this.currentProgressDeferred.promise;
+                return this.progressPromise;
             }
 
-            this.currentProgressDeferred = this.$q.defer();
+            console.log('progress starting');
 
-            return this.initDeferred();
+            return this.initProgressMeter();
         }
 
 
@@ -55,13 +57,13 @@ module NgHttpProgress {
          * Bump back the current status to less completed
          * @returns {number}
          */
-        private bumpBack():boolean|number {
+        private bumpBack():ng.IPromise<number> {
 
             let currentProgress = this.status(),
                 fallBackTo = currentProgress - currentProgress * (currentProgress/120);
 
             this.set(fallBackTo);
-            return this.status();
+            return this.progressPromise;
         }
 
         /**
@@ -69,9 +71,8 @@ module NgHttpProgress {
          * @returns {IPromise<T>}
          */
         public stop():ng.IPromise<number> {
-            let completionPromise = this.currentProgressDeferred.promise;
             this.currentProgressDeferred.notify(false);
-            return completionPromise;
+            return this.progressPromise;
         }
 
         /**
@@ -80,19 +81,20 @@ module NgHttpProgress {
          */
         public complete():ng.IPromise<number> {
 
-            let completionPromise = this.currentProgressDeferred.promise;
-            this.currentProgressDeferred.resolve();
-            return completionPromise;
+            if (this.pendingDelays === 1){ //the last delay
+                this.currentProgressDeferred.resolve();
+            }
+
+            return this.progressPromise;
         }
 
         /**
          * Reset the progress bar to zero
          * @returns {IPromise<T>}
          */
-        public reset():ng.IPromise<number> {
-            let completionPromise = this.currentProgressDeferred.promise;
+        public rewind():ng.IPromise<number> {
             this.currentProgressDeferred.reject();
-            return completionPromise;
+            return this.progressPromise;
         }
 
         /**
@@ -103,12 +105,17 @@ module NgHttpProgress {
             return this.ngProgress.status();
         }
 
+        public progressStatus():ng.IPromise<number> {
+            return this.progressPromise;
+        }
+
         /**
          * Set the status of the progress bar
          * @param percentage
          */
-        public set(percentage:number):void {
-            return this.ngProgress.set(percentage);
+        public set(percentage:number):ng.IPromise<number> {
+            this.ngProgress.set(percentage);
+            return this.progressPromise;
         }
 
         /**
@@ -118,35 +125,53 @@ module NgHttpProgress {
         private finish():ng.IPromise<number> {
             let finishStatus = this.status();
             this.ngProgress.complete();
-            return this.$timeout(function () { //wait for the animation to finish before setting status
+
+            return this.$timeout(() => { //wait for the animation to finish before setting status
                 return finishStatus;
             }, NgHttpProgressService.ngProgressFinishTime);
+        }
+
+        /**
+         * Handle the reset. Immediately invoke as the ngProgress service executes immediately
+         * @returns {IPromise<number>}
+         */
+        private reset():ng.IPromise<number> {
+
+            this.ngProgress.reset();
+
+            return this.$q.when(this.status());
         }
 
         /**
          * Intialise the progress deferred promise
          * @returns {IPromise<TResult>}
          */
-        private initDeferred():ng.IPromise<number> {
+        private initProgressMeter():ng.IPromise<number> {
 
-            if (!this.currentProgressDeferred){
-                throw new NgHttpProgress.NgHttpProgressException("No deferred site progress registered");
-            }
+            this.currentProgressDeferred = this.$q.defer();
 
-            return this.currentProgressDeferred.promise
+            this.ngProgress.start();
+
+            return this.progressPromise = this.currentProgressDeferred.promise
                 .then(() => { //success
                     return this.finish();
                 }, () => { //error
-                    this.ngProgress.reset();
+                    return this.reset();
                 }, (bumpBack:boolean) => { //notify
                     if (bumpBack) {
                         this.bumpBack();
-                    } else {
+                    } else if (this.stopped){
+
+                        this.ngProgress.start();
+                    }else{
+
                         this.stop();
                     }
                 })
                 .finally(() => {
                     this.currentProgressDeferred = null; //clear the current progress
+                    this.progressPromise = null; //clear the current progress
+                    this.pendingDelays = 0; //reset
                 });
 
         }

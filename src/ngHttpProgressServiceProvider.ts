@@ -53,8 +53,8 @@ module NgHttpProgress {
             return this;
         }
 
-        public $get = ['$http', '$q', '$window', '$interval', 'ngProgress', function ngHttpProgressServiceFactory($http, $q, $window, $interval, ngProgress) {
-            return new NgHttpProgressService(this.config, $http, $q, $window, $interval, ngProgress);
+        public $get = ['$q', '$timeout', 'ngProgress', function ngHttpProgressServiceFactory($q, $timeout, ngProgress) {
+            return new NgHttpProgressService(this.config, $q, $timeout, ngProgress);
         }];
 
     }
