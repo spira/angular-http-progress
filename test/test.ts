@@ -51,6 +51,16 @@ describe('Custom configuration', function () {
 
     });
 
+    it('should throw an exception when invalid configuration is passed', () => {
+
+        let testInvalidConfigurationFn = () => {
+            ngHttpProgressProvider.configure({invalid:'config'});
+        };
+
+        expect(testInvalidConfigurationFn).to.throw(NgHttpProgress.NgHttpProgressException);
+
+    });
+
     beforeEach(()=>{
         inject((_ngHttpProgress_) => {
             customProgressService = _ngHttpProgress_;

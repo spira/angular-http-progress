@@ -49,6 +49,12 @@ module NgHttpProgress {
          * @returns {NgHttpProgress.NgHttpProgressServiceProvider}
          */
         public configure(config:INgHttpProgressServiceConfig) : NgHttpProgressServiceProvider {
+
+            let mismatchedConfig = _.xor(_.keys(config), _.keys(this.config));
+            if (mismatchedConfig.length > 0){
+                throw new NgHttpProgressException("Invalid properties ["+mismatchedConfig.join(',')+"] passed to config)");
+            }
+
             this.config = _.defaults(config, this.config);
             return this;
         }
