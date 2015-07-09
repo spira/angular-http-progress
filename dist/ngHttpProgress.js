@@ -189,7 +189,6 @@ var NgHttpProgress;
                 .then(function () {
                 return _this.finish();
             }, function () {
-                console.log('reset');
                 return _this.reset();
             }, function (action) {
                 switch (action) {

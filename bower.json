@@ -1,7 +1,7 @@
 {
-  "name": "ng-jwt-auth",
+  "name": "angular-http-progress",
   "version": "0.0.0",
-  "description": "Angular JSON Web Token Authentication Module",
+  "description": "Wrapper for https://github.com/victorbjelkholm/ngprogress - automatically handles http progress with interceptor",
   "main": "dist/ngHttpProgress.js",
   "dependencies": {
     "lodash": "~3.9.3",

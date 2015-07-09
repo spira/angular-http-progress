@@ -188,7 +188,6 @@ module NgHttpProgress {
                 .then(() => { //success
                     return this.finish();
                 }, () => { //error
-                    console.log('reset');
                     return this.reset();
                 }, (action:string) => { //notify
 
