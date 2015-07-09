@@ -1,14 +1,10 @@
-/// <reference path="../typings/lodash/lodash.d.ts" />
-/// <reference path="../typings/angularjs/angular.d.ts" />
+/// <reference path="../typings/tsd.d.ts" />
 /// <reference path="./ngHttpProgressInterfaces.ts" />
 
 module NgHttpProgress {
 
     export class NgHttpProgressInterceptor {
 
-        //list injected dependencies
-        private $q: ng.IQService;
-        private $injector: ng.auto.IInjectorService;
         private ngHttpProgressService: NgHttpProgressService;
 
 
@@ -18,39 +14,40 @@ module NgHttpProgress {
          * @param _$injector
          */
         static $inject = ['$q', '$injector'];
-        constructor(_$q: ng.IQService, _$injector: ng.auto.IInjectorService) {
+        constructor(
+            private $q: ng.IQService,
+            private $injector: ng.auto.IInjectorService) {
 
-            this.$q = _$q;
-            this.$injector = _$injector;
         }
 
         private getNgHttpProgressService = (): NgHttpProgressService=> {
             if (this.ngHttpProgressService == null) {
-                this.ngHttpProgressService = this.$injector.get('ngHttpProgressService');
+                this.ngHttpProgressService = this.$injector.get('ngHttpProgress');
             }
             return this.ngHttpProgressService;
         };
 
         public request = (config):any => {
 
-            let ngHttpProgressService = this.getNgHttpProgressService();
-            //@todo start progress bar
+            let progress = this.getNgHttpProgressService();
+
+            progress.start();
 
             return config;
         };
 
         public response = (response):any => {
 
-            let ngHttpProgressService = this.getNgHttpProgressService();
-            //@todo advance progress bar to end
+            let progress = this.getNgHttpProgressService();
+            progress.complete();
 
             return response;
         };
 
         public responseError = (response):any => {
 
-            let ngHttpProgressService = this.getNgHttpProgressService();
-            //@todo rewind progress bar
+            let progress = this.getNgHttpProgressService();
+            progress.rewind();
 
             return response;
         };

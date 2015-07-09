@@ -1,13 +1,25 @@
+/// <reference path="../typings/tsd.d.ts" />
 /// <reference path="../typings/lodash/lodash.d.ts" />
 /// <reference path="../typings/angularjs/angular.d.ts" />
 declare module NgHttpProgress {
-    interface INgHttpProgressService {
-        start(): boolean;
-        stop(): boolean;
-        complete(): boolean;
-        reset(): boolean;
+    interface ngProgress {
+        start(): void;
+        height(cssHeight: string): void;
+        color(cssColor: string): void;
         status(): number;
-        set(): boolean;
+        stop(): void;
+        set(percentage: number): void;
+        reset(): void;
+        complete(): void;
+        getDomElement(): Element;
+    }
+    interface INgHttpProgressService {
+        start(): ng.IPromise<number>;
+        stop(): ng.IPromise<number>;
+        complete(): ng.IPromise<number>;
+        rewind(): ng.IPromise<number>;
+        status(): number;
+        set(percentage: number): void;
     }
     interface IngHttpProgressServiceProvider {
         configure(config: INgHttpProgressServiceConfig): NgHttpProgressServiceProvider;
@@ -28,7 +40,7 @@ declare module NgHttpProgress {
          * @param _$injector
          */
         static $inject: string[];
-        constructor(_$q: ng.IQService, _$injector: ng.auto.IInjectorService);
+        constructor($q: ng.IQService, $injector: ng.auto.IInjectorService);
         private getNgHttpProgressService;
         request: (config: any) => any;
         response: (response: any) => any;
@@ -38,25 +50,78 @@ declare module NgHttpProgress {
 declare module NgHttpProgress {
     class NgHttpProgressService implements INgHttpProgressService {
         private config;
-        private $http;
         private $q;
-        private $window;
-        private $interval;
+        private $timeout;
+        private ngProgress;
+        private currentProgressDeferred;
+        private progressPromise;
+        static ngProgressFinishTime: number;
+        private pendingDelays;
+        private stopped;
         /**
          * Construct the service with dependencies injected
-         * @param _config
-         * @param _$http
-         * @param _$q
-         * @param _$window
-         * @param _$interval
+         * @param config
+         * @param $q
+         * @param $timeout
+         * @param ngProgress
          */
-        constructor(_config: INgHttpProgressServiceConfig, _$http: ng.IHttpService, _$q: ng.IQService, _$window: ng.IWindowService, _$interval: ng.IIntervalService);
-        start(): boolean;
-        stop(): boolean;
-        complete(): boolean;
-        reset(): boolean;
+        constructor(config: INgHttpProgressServiceConfig, $q: ng.IQService, $timeout: ng.ITimeoutService, ngProgress: ngProgress);
+        /**
+         * Start the progress bar running
+         * @returns {any}
+         */
+        start(): ng.IPromise<number>;
+        /**
+         * Bump back the current status to less completed
+         * @returns {number}
+         */
+        private bumpBack();
+        /**
+         * Halt the progress bar
+         * @returns {IPromise<T>}
+         */
+        stop(): ng.IPromise<number>;
+        /**
+         * Complete the progress
+         * @returns {IPromise<T>}
+         */
+        complete(): ng.IPromise<number>;
+        /**
+         * Reset the progress bar to zero
+         * @returns {IPromise<T>}
+         */
+        rewind(): ng.IPromise<number>;
+        /**
+         * Get the status of the progress bar
+         * @returns {number}
+         */
         status(): number;
-        set(): boolean;
+        progressStatus(): ng.IPromise<number>;
+        /**
+         * Set the status of the progress bar
+         * @param percentage
+         */
+        set(percentage: number): ng.IPromise<number>;
+        /**
+         * Finish the progress of the promise
+         * @returns {IPromise<any>}
+         */
+        private finish();
+        /**
+         * Handle the reset. Immediately invoke as the ngProgress service executes immediately
+         * @returns {IPromise<number>}
+         */
+        private reset();
+        /**
+         * Handle the stopping.
+         * @returns {IPromise<any>}
+         */
+        private halt();
+        /**
+         * Intialise the progress deferred promise
+         * @returns {IPromise<TResult>}
+         */
+        private initProgressMeter();
     }
 }
 declare module NgHttpProgress {
@@ -83,6 +148,6 @@ declare module NgHttpProgress {
          * @returns {NgHttpProgress.NgHttpProgressServiceProvider}
          */
         configure(config: INgHttpProgressServiceConfig): NgHttpProgressServiceProvider;
-        $get: (string | (($http: any, $q: any, $window: any, $interval: any) => NgHttpProgressService))[];
+        $get: (string | (($q: any, $timeout: any, ngProgress: any) => NgHttpProgressService))[];
     }
 }

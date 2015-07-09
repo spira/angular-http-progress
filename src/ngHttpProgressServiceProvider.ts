@@ -49,19 +49,25 @@ module NgHttpProgress {
          * @returns {NgHttpProgress.NgHttpProgressServiceProvider}
          */
         public configure(config:INgHttpProgressServiceConfig) : NgHttpProgressServiceProvider {
+
+            let mismatchedConfig = _.xor(_.keys(config), _.keys(this.config));
+            if (mismatchedConfig.length > 0){
+                throw new NgHttpProgressException("Invalid properties ["+mismatchedConfig.join(',')+"] passed to config)");
+            }
+
             this.config = _.defaults(config, this.config);
             return this;
         }
 
-        public $get = ['$http', '$q', '$window', '$interval', function ngHttpProgressServiceFactory($http, $q, $window, $interval) {
-            return new NgHttpProgressService(this.config, $http, $q, $window, $interval);
+        public $get = ['$q', '$timeout', 'ngProgress', function ngHttpProgressServiceFactory($q, $timeout, ngProgress) {
+            return new NgHttpProgressService(this.config, $q, $timeout, ngProgress);
         }];
 
     }
 
 
 
-    angular.module('ngHttpProgress', [])
+    angular.module('ngHttpProgress', ['ngProgress'])
         .provider('ngHttpProgress', NgHttpProgressServiceProvider)
         .service('ngHttpProgressInterceptor', NgHttpProgressInterceptor)
         .config(['$httpProvider', '$injector', ($httpProvider:ng.IHttpProvider) => {
