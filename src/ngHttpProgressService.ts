@@ -1,6 +1,3 @@
-/// <reference path="../typings/lodash/lodash.d.ts" />
-/// <reference path="../typings/angularjs/angular.d.ts" />
-/// <reference path="./ngHttpProgressInterfaces.ts" />
 
 module NgHttpProgress {
 
