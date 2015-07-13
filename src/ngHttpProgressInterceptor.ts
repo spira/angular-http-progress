@@ -1,5 +1,4 @@
 /// <reference path="../typings/tsd.d.ts" />
-/// <reference path="./ngHttpProgressInterfaces.ts" />
 
 module NgHttpProgress {
 

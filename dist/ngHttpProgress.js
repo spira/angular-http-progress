@@ -1,6 +1,4 @@
 /// <reference path="../typings/tsd.d.ts" />
-/// <reference path="../typings/tsd.d.ts" />
-/// <reference path="./ngHttpProgressInterfaces.ts" />
 var NgHttpProgress;
 (function (NgHttpProgress) {
     var NgHttpProgressInterceptor = (function () {
@@ -40,9 +38,7 @@ var NgHttpProgress;
     })();
     NgHttpProgress.NgHttpProgressInterceptor = NgHttpProgressInterceptor;
 })(NgHttpProgress || (NgHttpProgress = {}));
-/// <reference path="../typings/lodash/lodash.d.ts" />
-/// <reference path="../typings/angularjs/angular.d.ts" />
-/// <reference path="./ngHttpProgressInterfaces.ts" />
+/// <reference path="../typings/tsd.d.ts" />
 var NgHttpProgress;
 (function (NgHttpProgress) {
     var NgHttpProgressService = (function () {
@@ -214,11 +210,6 @@ var NgHttpProgress;
     })();
     NgHttpProgress.NgHttpProgressService = NgHttpProgressService;
 })(NgHttpProgress || (NgHttpProgress = {}));
-/// <reference path="../typings/lodash/lodash.d.ts" />
-/// <reference path="../typings/angularjs/angular.d.ts" />
-/// <reference path="./ngHttpProgressInterfaces.ts" />
-/// <reference path="./ngHttpProgressService.ts" />
-/// <reference path="./ngHttpProgressInterceptor.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -279,4 +270,5 @@ var NgHttpProgress;
             $httpProvider.interceptors.push('ngHttpProgressInterceptor');
         }]);
 })(NgHttpProgress || (NgHttpProgress = {}));
+
 //# sourceMappingURL=ngHttpProgress.js.map

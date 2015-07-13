@@ -1,9 +1,3 @@
-/// <reference path="../typings/lodash/lodash.d.ts" />
-/// <reference path="../typings/angularjs/angular.d.ts" />
-/// <reference path="./ngHttpProgressInterfaces.ts" />
-/// <reference path="./ngHttpProgressService.ts" />
-/// <reference path="./ngHttpProgressInterceptor.ts" />
-
 module NgHttpProgress {
 
     export declare class Error {

@@ -1,6 +1,22 @@
 /// <reference path="../typings/tsd.d.ts" />
-/// <reference path="../typings/lodash/lodash.d.ts" />
-/// <reference path="../typings/angularjs/angular.d.ts" />
+declare module NgHttpProgress {
+    class NgHttpProgressInterceptor {
+        private $q;
+        private $injector;
+        private ngHttpProgressService;
+        /**
+         * Construct the service with dependencies injected
+         * @param _$q
+         * @param _$injector
+         */
+        static $inject: string[];
+        constructor($q: ng.IQService, $injector: ng.auto.IInjectorService);
+        private getNgHttpProgressService;
+        request: (config: any) => any;
+        response: (response: any) => any;
+        responseError: (response: any) => any;
+    }
+}
 declare module NgHttpProgress {
     interface ngProgress {
         start(): void;
@@ -27,24 +43,6 @@ declare module NgHttpProgress {
     interface INgHttpProgressServiceConfig {
         color?: string;
         height?: string;
-    }
-}
-declare module NgHttpProgress {
-    class NgHttpProgressInterceptor {
-        private $q;
-        private $injector;
-        private ngHttpProgressService;
-        /**
-         * Construct the service with dependencies injected
-         * @param _$q
-         * @param _$injector
-         */
-        static $inject: string[];
-        constructor($q: ng.IQService, $injector: ng.auto.IInjectorService);
-        private getNgHttpProgressService;
-        request: (config: any) => any;
-        response: (response: any) => any;
-        responseError: (response: any) => any;
     }
 }
 declare module NgHttpProgress {
