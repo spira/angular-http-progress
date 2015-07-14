@@ -43,12 +43,12 @@ module NgHttpProgress {
             return response;
         };
 
-        public responseError = (response):any => {
+        public responseError = (rejection):any => {
 
             let progress = this.getNgHttpProgressService();
             progress.rewind();
 
-            return response;
+            return this.$q.reject(rejection);
         };
 
     }
