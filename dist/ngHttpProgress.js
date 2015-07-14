@@ -22,10 +22,10 @@ var NgHttpProgress;
                 progress.complete();
                 return response;
             };
-            this.responseError = function (response) {
+            this.responseError = function (rejection) {
                 var progress = _this.getNgHttpProgressService();
                 progress.rewind();
-                return response;
+                return _this.$q.reject(rejection);
             };
         }
         /**

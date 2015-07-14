@@ -14,7 +14,7 @@ declare module NgHttpProgress {
         private getNgHttpProgressService;
         request: (config: any) => any;
         response: (response: any) => any;
-        responseError: (response: any) => any;
+        responseError: (rejection: any) => any;
     }
 }
 declare module NgHttpProgress {
