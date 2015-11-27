@@ -96,7 +96,9 @@ module NgHttpProgress {
          * @returns {IPromise<T>}
          */
         public rewind():ng.IPromise<number> {
-            this.currentProgressDeferred.reject();
+            if (this.currentProgressDeferred){
+                this.currentProgressDeferred.reject();
+            }
             return this.progressPromise;
         }
 
