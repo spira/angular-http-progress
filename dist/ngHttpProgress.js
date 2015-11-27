@@ -110,7 +110,9 @@ var NgHttpProgress;
          * @returns {IPromise<T>}
          */
         NgHttpProgressService.prototype.rewind = function () {
-            this.currentProgressDeferred.reject();
+            if (this.currentProgressDeferred) {
+                this.currentProgressDeferred.reject();
+            }
             return this.progressPromise;
         };
         /**
