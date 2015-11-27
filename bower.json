@@ -1,6 +1,6 @@
 {
   "name": "angular-http-progress",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Wrapper for https://github.com/victorbjelkholm/ngprogress - automatically handles http progress with interceptor",
   "main": "dist/ngHttpProgress.js",
   "dependencies": {
