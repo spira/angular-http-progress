@@ -1,19 +1,41 @@
-sudo: false #use container based infrastructure
+sudo: false
 language: node_js
 node_js:
-  - "0.12"
-
+- 5.4.1
 addons:
   apt:
     sources:
-      - libnotify-bin
-
+    - libnotify-bin
+cache:
+  directories:
+  - node_modules
+branches:
+  except:
+  - "/^v[0-9\\.]+/"
+before_install:
+- npm install -g pr-bumper
+- pr-bumper check
 install:
-  - travis_retry npm install -g gulp
-  - travis_retry npm install
-
+- travis_retry npm install -g gulp
+- travis_retry npm install
+- travis_retry typings install
 script:
-  - gulp test
-
+- npm test
+- npm run build
 after_script:
-  - gulp coveralls
+- gulp coveralls
+before_deploy:
+- pr-bumper bump
+deploy:
+  provider: npm
+  email: zak.henry@gmail.com
+  skip_cleanup: true
+  on:
+    branch: master
+    tags: false
+  api_key:
+    secure: cFYp7hSA0BIpBwkv8YdcLPkDkOtUSgAkcpwwiK7vVUjLVPw6vYzwo7EMcTDFZ6CTk9V6OuBFGZQNiHDvv6uZwXcuboItlkIrOelKM+ioer4lYJyausoIv5nkEaJv63vJsFXTZyWALHHbA784zLGqhD46UkQXIcln2OBQAmu564ivYrXF+59FyVKD/no8nb/XMgp6p4650O8XZTK4r4r9rMqfkbDIbpIWTfcbnw1QAhjTO8IcVhX7nfiOeq16zJWM9ndShbizAvRuOd849gkEelMfsUWruGCxU9r6l9wplsRKSkY3mi1cnmegp6xgeaDkuEuJ0lycazgUAr4uCYSKfxsvhE01yye6xoA0u8Zou6fbUP5Am/nPlPMJ/u9wCieAoYXbqE5A2B91DvafkiyugsERzdMMYpkuC6y4nL64EHie/stHtFVlkq1o+yClLUSisw4yrYZ31KCSmidDpJHFpL+ZD6cW5b+F5qsXHO/X5efI4nWqj+iZ4pSCj+TclSHWCy3lx40JZEckMRXvYLPWjNlJ4wacBlcdqC2LN1CtS7j7uVRbSQ6jUMOPuo+YRkspwkm2xNubp5R3zG6LZGZ1F/Z6kpmgtMr9IhsR5gYfSVeTrm+mdNv9yzqJ6ZEJ3tHqgR6IVmW8askZhSPZ04gDLtg3REkSx5UZkIZr0mq/GbA=
+env:
+  global:
+  - secure: BR68CAHOfMzJuEGW+BxhTHs1ICzHKmRJoDHVNYz/qOAB7D4RVbew9gJkAIzvotbDpGiDTXsAZJxc2n6i67BENaKcAlX7R95mETfjENvN6ozOFxoURy36pAmsGqKnSPOPIifQvkbzlsicriXHvLx2IbFCOMB8NYNDh/EJq07JKL3dtIy5sKbjT2zx6MKwJdl3iV0icfZpOhz1xhcpd10BHdKI+4omYe7wpM/b9eVrlIyyQ1lo0nFVTrVTRBANWn3IK+IR5rIv5Fl1EUY2o4rBsLjfL5yE90dHFWDjFK/e8v44NTkv08KY2llFlTh2fr0+s/u95LIkCBXQBlNKOo1Egfkr+n+n3tMADbFOHkRKdcLKYTczqtjkFpOFnomcrzIjnab3pA4WY6t7nQ4sZTr38T2++qzF1wfB0/jK9ENX3UpE3z8BQfREqVRB1g24DsQi7w86oH4ovgRtPapih7wkOasXISpduZCydGqcwNsA8Yf/blFVVZSzjS+MwJYcE81OtoriZ+e/AycIgWM3joBgJIS0X5CsR8zix78IgpRX0a0wkBm+yfnvwYfYGG3Amdjhq+i4uFTZhWhewVRJhZtWaxfp606k+rV+/2R144MF2FSEEl7q0KRDjNyKDRXiG6+mxe7b/zmZaYd6JkUA2vf4AES2hou0Uv4Jx1v40qBSlIg=
+  - secure: M7qsXNy9a4dJB9DClvHzLEkTBTW+GXMRDSmrjvmLv44Q/ZJ6QZVZZA4QwwtDs/ZX1RiMvq3YIRbRMWCxbaoUDPp3pt9aTaCWgudUO1icADUt3DmFlEGbAJGotnNI4kRVNHKr1s18Vh30aE+LxPF+7l3WBFBKzDpLddE2p/dGM8QX3E5XKGekkC3ckqEZicKJZqtqee9p8AZ0hrdlOEn7WOG+Xp9WLHPoNVgZvTS4q0RsYBefg4a71vLVOCfF/B6D0drwhW1wkG8jJocZrhfEqAwmhrqN0zm2K5MFHUu7JOYpb+f2Pfm/q9a3BB+dc7Hv0FM/FsRK6UZjRjCwnIO/m1kNU01P0aO03n9T8mzOhUXZV7w1deMPwhmZnzGFTAQ1z0tN+FOgLCjIdc1nx+Zqa5K5a2M/b2oAas6Rqd0N7f25oPxuFr75DXrG4KZyRrrG8UGf/Vb5yLKOitZXoK7vNzfjS307A5OzIHlOzs2QSN5VZHvEyH5L6BD1J/cgCiKhOw4GVpcNT1KhUeMbTdAK+HD37gT1ODNein5+mWnOO4nYCciSC8nR8ZFNUUBHiJULC/kh+w8dh2mwE4s6mTKYfJ+Fn7ExYTqkQfulBBXKDBqZmHzSOc0brHLSOZmpCHP4joj6whG451ewHjdOF8PUiSsxdf8uGtog2XYMjzgxIGc=
