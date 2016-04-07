@@ -45,7 +45,7 @@ describe('Custom configuration', () => {
     it('should throw an exception when invalid configuration is passed', () => {
 
         let testInvalidConfigurationFn = () => {
-            ngHttpProgressProvider.configure({invalid:'config'});
+            ngHttpProgressProvider.configure(<any>{invalid:'config'});
         };
 
         expect(testInvalidConfigurationFn).to.throw(NgHttpProgressException);
@@ -249,7 +249,7 @@ describe('Service tests', () => {
 
             tickTime(2); //flush the completion timeout
 
-        })
+        });
 
     });
 

@@ -19,7 +19,7 @@
   "dependencies": {
     "angular": "^1.5.0",
     "lodash": "^4.0.0",
-    "ngprogress": "^1.1.1"
+    "ngprogress": "xiphiaz/ngProgress#1f5bdbb1"
   },
   "devDependencies": {
     "angular-mocks": "1.5.0",

@@ -50,7 +50,7 @@ export class NgHttpProgressServiceProvider implements ng.IServiceProvider {
      * @param config
      * @returns {NgHttpProgressServiceProvider}
      */
-    public configure(config:INgHttpProgressServiceConfig):NgHttpProgressServiceProvider {
+    public configure(config:INgHttpProgressServiceConfig):this {
 
         let mismatchedConfig = _.xor(_.keys(config), _.keys(this.config));
         if (mismatchedConfig.length > 0) {
@@ -61,8 +61,8 @@ export class NgHttpProgressServiceProvider implements ng.IServiceProvider {
         return this;
     }
 
-    public $get = ['$q', '$timeout', 'ngProgress', function ngHttpProgressServiceFactory($q, $timeout, ngProgress) {
-        return new NgHttpProgressService(this.config, $q, $timeout, ngProgress);
+    public $get = ['$q', '$timeout', /*'ngProgress',*/ function ngHttpProgressServiceFactory($q, $timeout/*, ngProgress*/) {
+        return new NgHttpProgressService(this.config, $q, $timeout/*, ngProgress*/);
     }];
 
 }
