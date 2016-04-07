@@ -1,20 +1,11 @@
-/// <reference path="../typings/tsd.d.ts" />
-/// <reference path="../dist/ngHttpProgress.d.ts" />
-
-
-let expect = chai.expect;
-
-let fixtures = {
-
-
-    get customConfig():NgHttpProgress.INgHttpProgressServiceConfig{
-        return {
-            color: 'rgb(255, 0, 255)',
-            height: '2px'
-        };
-    },
-
-};
+import {
+    expect,
+    // sinon,
+    fixtures,
+    NgHttpProgressServiceProvider
+} from "../testBootstrap.spec";
+import {NgHttpProgressService} from "./ngHttpProgressService";
+import {NgHttpProgressException} from "../provider/ngHttpProgressServiceProvider";
 
 let $http:ng.IHttpService;
 let $q:ng.IQService;
@@ -35,14 +26,14 @@ let tickTime = (seconds) => {
 
 
 
-describe('Custom configuration', function () {
+describe('Custom configuration', () => {
 
-    let ngHttpProgressProvider:NgHttpProgress.NgHttpProgressServiceProvider;
-    let customProgressService:NgHttpProgress.NgHttpProgressService;
+    let ngHttpProgressProvider:NgHttpProgressServiceProvider;
+    let customProgressService:NgHttpProgressService;
 
     beforeEach(() => {
 
-        module('ngHttpProgress', (_ngHttpProgressProvider_) => {
+        angular.mock.module('ngHttpProgress', (_ngHttpProgressProvider_) => {
             ngHttpProgressProvider = _ngHttpProgressProvider_; //register injection of service provider
 
             ngHttpProgressProvider.configure(fixtures.customConfig);
@@ -57,7 +48,7 @@ describe('Custom configuration', function () {
             ngHttpProgressProvider.configure({invalid:'config'});
         };
 
-        expect(testInvalidConfigurationFn).to.throw(NgHttpProgress.NgHttpProgressException);
+        expect(testInvalidConfigurationFn).to.throw(NgHttpProgressException);
 
     });
 
@@ -67,7 +58,7 @@ describe('Custom configuration', function () {
         })
     });
 
-    it('should have the configured color and height', function() {
+    it('should have the configured color and height', () => {
 
         let element:Element =  (<any>customProgressService).ngProgress.getDomElement(),
             styledElement = jQuery(element).find('#ngProgress')
@@ -82,12 +73,12 @@ describe('Custom configuration', function () {
 describe('Service tests', () => {
 
     let $httpBackend:ng.IHttpBackendService;
-    let ngHttpProgressService:NgHttpProgress.NgHttpProgressService;
+    let ngHttpProgressService:NgHttpProgressService;
 
 
     beforeEach(()=>{
 
-        module('ngHttpProgress');
+        angular.mock.module('ngHttpProgress');
 
         inject((_$httpBackend_, _ngHttpProgress_, _$http_, _$q_, _$interval_, _$timeout_) => {
 

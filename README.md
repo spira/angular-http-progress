@@ -4,7 +4,6 @@ Wrapper for https://github.com/victorbjelkholm/ngprogress - automatically handle
 [![Build Status](https://travis-ci.org/spira/angular-http-progress.svg?branch=master)](https://travis-ci.org/spira/angular-http-progress) 
 [![Coverage Status](https://coveralls.io/repos/spira/angular-http-progress/badge.svg?branch=master)](https://coveralls.io/r/spira/angular-http-progress?branch=master)
 [![Dependency Status](https://gemnasium.com/spira/angular-http-progress.svg)](https://gemnasium.com/spira/angular-http-progress)
-[![Bower version](https://badge.fury.io/bo/angular-http-progress.svg)](http://badge.fury.io/bo/angular-http-progress)
 [![npm version](https://badge.fury.io/js/angular-http-progress.svg)](http://badge.fury.io/js/angular-http-progress)
 
 ## Intro
@@ -13,32 +12,40 @@ This module wraps https://github.com/victorbjelkholm/ngprogress, adding an inter
    
 ## Installation
 
-Install through bower:
+Install with npm:
 
 ```sh
-bower install angular-http-progress --save
+npm install angular-http-progress --save
 ```
 
 ## Usage
 
 * Require the `ngHttpProgress` module in your angular application
 
-```js
-angular.module('app', ['ngHttpProgress'])
+```ts
+
+    import "angular-http-progress";
+    
+    angular.module('app', ['ngHttpProgress']);
+    
 ```
 
 * (Optionally) configure the service provider
 
-```js
-angular.module('app', ['ngHttpProgress'])
-.config(['ngHttpProgress', function(ngHttpProgressProvider){
-    ngHttpProgressProvider
-        .configure({
-            color: '#ff000',
-            height: '10px'
-        })
-    ;
-}])
+```ts
+
+    import {NgHttpProgressServiceProvider} from "angular-http-progress";
+    
+    angular.module('app', ['ngHttpProgress'])
+    .config(['ngHttpProgress', function(ngHttpProgressProvider:NgHttpProgressServiceProvider){
+        ngHttpProgressProvider
+            .configure({
+                color: '#ff000',
+                height: '10px'
+            })
+        ;
+    }]);
+
 ```
 
 * ???
